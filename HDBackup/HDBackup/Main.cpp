@@ -26,28 +26,34 @@ int main(int argc, char *argv[])
 		// User input
 		cout << "User name and PC number: ";
 		cin.getline(_id, 64);
-		cin.ignore(INT_MAX);
 		cout << "Source drive letter: ";
 		cin.getline(_source, 64);
-		cin.ignore(INT_MAX);
 		// End user input
-		out = backup();
-
+		
 	}
-	else if (argc == 2 && (!strcmp(argv[1], "/h") || !strcmp(argv[1], "-h")))
+	else if (argc == 2)
 	{
 		// Display help
-		
-		cout << "\n------------------------------ "
-			 << "\nService Desk Backup version " << VERSION << endl;
-		cout << "HDBackup.exe " << "<user & PC#> " << "<source drive> " << endl;
-		cout << "... or HDBackup.exe to be prompted for input " << endl;
-		cout << "\nTo modify destination drive change config.ini in the source directory." << endl;
+		if (!strcmp(argv[1], "/h") || !strcmp(argv[1], "-h"))
+		{
+			cout << "\n------------------------------ "
+				<< "\nService Desk Backup version " << VERSION << endl;
+			cout << "HDBackup.exe " << "<user & PC#> " << "<source drive> " << endl;
+			cout << "... or HDBackup.exe to be prompted for input " << endl;
+			cout << "\nTo modify destination drive change config.ini in the source directory." << endl;
+		}
+		else if (!strcmp(argv[1], "/s") || !strcmp(argv[1], "-s"))
+		{
+			cout << endl;
+		}
+		else if (!strcmp(argv[1], "/v") || !strcmp(argv[1], "-v"))
+		{
+			cout << "Version " << VERSION << endl;
+		}
 	}
 	else if (argc == 3)
 	{
 		cout << "User, src input" << endl;
-		out = backup();
 	}
 	else
 	{
@@ -57,7 +63,9 @@ int main(int argc, char *argv[])
 	return out;
 }
 
-int backup()
+int runBackup(char * destString, char * source)
 {
+	int out = 0;
 
+	return out;
 }
