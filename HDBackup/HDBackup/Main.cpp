@@ -7,19 +7,22 @@ using std::endl;
 #include <string>
 using std::string;
 using std::to_string;
+#include <sstream>
+using std::getline;
 #include <ctime>
 using std::time;
 
 #include <Windows.h>
 
 string createTimestamp(tm t);
+int runBackup(string dest, string src);
 
 int main(int argc, char *argv[])
 {
 	int out = 0;
-	char _source[64] = { 0 };
-	char _dest[64] = { "E" };
-	char _id[64] = { 0 };
+	string _source;
+	string _dest;
+	string _id;
 	string timestamp;
 	string mkdir;
 
@@ -28,15 +31,15 @@ int main(int argc, char *argv[])
 	localtime_s(&now, &t);
 	timestamp = createTimestamp(now);
 
-
 	if (argc == 1)
 	{
 		// User input
 		cout << "User name and PC number: ";
-		cin.getline(_id, 64);
+		getline(cin, _id);
 		cout << "Source drive letter: ";
-		cin.getline(_source, 64);
+		getline(cin, _source);
 		// End user input
+		out = runBackup(_dest + ":\\Backups\\" + _id, _source);
 	}
 	else if (argc == 2)
 	{
@@ -58,6 +61,10 @@ int main(int argc, char *argv[])
 			cout << "Version " << VERSION << endl;
 		}
 	}
+	else if (argc == 3)
+	{
+		out = runBackup(_dest + ":\\Backups\\" + argv[1], argv[2]);
+	}
 	else
 	{
 		cout << "ERROR: Incorrect parameters. Try HDBackup.exe /h for help." << endl;
@@ -77,9 +84,11 @@ string createTimestamp(tm t)
 	return out;
 }
 
-int runBackup(char * destString, char * source)
+int runBackup(string dest, string src)
 {
 	int out = 0;
+
+	CreateDirectory(dest.c_str(), NULL);
 
 	return out;
 }
