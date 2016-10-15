@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<settings>
+  <destinations>
+    <local>d</local>
+    <server>serv</server>
+  </destinations>
+</settings>
