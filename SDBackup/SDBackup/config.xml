@@ -1,8 +1,11 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="utf-8"?>
 <settings>
-  <destinations>
-    <local>d</local>
-    <server>serv</server>
-  </destinations>
+<dirs>
+	<local>d</local>
+	<server>serv</server>
+</dirs>
+<exclude>
+	<_1>C:\\Users\\!adminx</_1>
+  <_2>C:\\Users\\telecom</_2>
+</exclude>
 </settings>

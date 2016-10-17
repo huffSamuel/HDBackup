@@ -12,11 +12,28 @@ namespace SDBackup
     {
         static int Main(string[] args)
         {
-            XmlDocument config = new XmlDocument();
-            config.Load(Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "config.xml"));
-            XmlNode node = config.DocumentElement.SelectSingleNode("/settings/destinations");
-            string destLocal = node.Attributes["local"]?.InnerText;
-            string destServer = node.Attributes["server"]?.InnerText;
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "config.xml");
+            if(!File.Exists(path))
+            {
+                using (XmlWriter w = XmlWriter.Create(path))
+                {
+                    w.WriteStartDocument();
+                    w.WriteStartElement("settings");
+                    //
+                    w.WriteStartElement("dirs");
+                    w.WriteElementString("local", "d");
+                    w.WriteElementString("server", "serv");
+                    w.WriteEndElement();
+                    //
+                    w.WriteStartElement("exclude");
+                    w.WriteElementString("_1", "C:\\Users\\!adminx");
+                    w.WriteEndElement();
+                    //
+                    w.WriteEndElement();
+                    w.WriteEndDocument();
+                }
+            }
+
             if (args.Length == 0)
             {
                 string ID_Name, srcDrive;
@@ -33,7 +50,7 @@ namespace SDBackup
                 }
 
                 // Perform Backup
-                return Backup(ID_Name, srcDrive);
+                return Backup(ID_Name, srcDrive, path);
 
             }
             else if (args.Length == 1)
@@ -61,7 +78,7 @@ namespace SDBackup
                     return Constants.ERROR_ARGUMENTS;
                 }
 
-                return Backup(args[0], args[1]);
+                return Backup(args[0], args[1], path);
             }
 
             else
@@ -72,9 +89,28 @@ namespace SDBackup
 
         }
 
-        static int Backup(string ID_name, string srcDrive)
+        static int Backup(string ID_name, string srcDrive, string xmlPath)
         {
+            List<string> excludes = new List<string>();
+
+            // Get XML backup information
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlPath);
+
+            string local, server;
+            XmlNode node = doc.DocumentElement.SelectSingleNode("/settings/dirs/local");
+            local = node.InnerText;
+            node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
+            server = node.InnerText;
+
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude");
             
+            foreach(XmlNode child in node.ChildNodes)
+            {
+                excludes.Add(child.InnerText);
+            }
+            // END Get XML backup information
+
             return 0;
         }
     }
