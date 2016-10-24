@@ -86,14 +86,21 @@ namespace SDBackup
                 Console.WriteLine("Invalid Command-Line Arguments");
                 return Constants.ERROR_ARGUMENTS;
             }
-
         }
 
         static int Backup(string ID_name, string srcDrive, string xmlPath)
         {
-            List<string> excludes = new List<string>();
+            // Initial Error Checking
+            if (!Directory.Exists(srcDrive + "://"))        // If the source drive does not exist
+                return Constants.ERROR_MISSINGDIRECTORY;
 
+            DriveInfo src = new DriveInfo(srcDrive);
+
+
+            List<string> excludes = new List<string>();
             // Get XML backup information
+            // local is the local destination
+            // server is the server backup destination
             XmlDocument doc = new XmlDocument();
             doc.Load(xmlPath);
 
@@ -111,7 +118,80 @@ namespace SDBackup
             }
             // END Get XML backup information
 
+            // Copy Root Directory
+            string[] files = Directory.GetFiles(srcDrive + ":\\");
+            foreach (string file in files)
+            {
+                if(!file.EndsWith(".sys") && file.Contains("."))
+                {
+                   // File.Copy(file, local + file.Substring(1));
+                    Console.WriteLine("File.Copy(" + file + ", " + local + "\\Root" + file.Substring(1) + ")");
+                }
+            }
+
+            // Copy Users Directory
+            int count = CopyDirectory("C:\\Users", local, true);
+            Console.WriteLine("Copied " + count + " files");
+
+
             return 0;
+        }
+
+        static void DisplaySize(long bytes)
+        {
+            Console.WriteLine((int)(bytes / 1024f / 1024f / 1024f) + " GB");
+        }
+
+        static int CopyDirectory(string source, string dest, bool copySubDirs)
+        {
+            if (source == "C:\\Users\\!adminx")
+                return 0;
+            if (source.Contains("AppData"))
+                return 0;
+            int count = 0;
+            string[] dirs;
+
+            // Copy files in the source directory
+            count += CopyFiles(source, dest);
+            // END Copy Files
+
+            // Copy the directories below this
+            if(copySubDirs)
+            {
+                try
+                {
+                    dirs = Directory.GetDirectories(source);
+                    foreach (string dir in dirs)
+                    {
+                        count += CopyDirectory(dir, dest, copySubDirs);
+                    }
+                }
+                catch (Exception e) { }
+            }
+            // END Copy Directories
+            
+            return count;
+        }
+        static int CopyFiles(string source, string dest)
+        {
+            int count = 0;
+            string[] files;
+            try
+            {
+                files = Directory.GetFiles(source);
+                if (files == null) return count;
+                foreach (string file in files)
+                {
+                    if (!file.EndsWith(".sys") && file.Contains("."))
+                    {
+                        // File.Copy(file, local + file.Substring(1));
+                        Console.WriteLine(file);
+                        ++count;
+                    }
+                }
+            }
+            catch (Exception e) { }
+            return count;
         }
     }
 }
