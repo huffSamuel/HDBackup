@@ -10,6 +10,7 @@ namespace SDBackup
 {
     class Program
     {
+        
         static int Main(string[] args)
         {
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "config.xml");
@@ -110,43 +111,43 @@ namespace SDBackup
             node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
             server = node.InnerText;
 
-            node = doc.DocumentElement.SelectSingleNode("/settings/exclude");
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/users");
             
             foreach(XmlNode child in node.ChildNodes)
             {
                 excludes.Add(child.InnerText);
+                GlobalExcludes.Add(child.InnerText);
+            }
+
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/directories");
+            foreach(XmlNode child in node.ChildNodes)
+            {
+                GlobalSubExcludes.Add(child.InnerText);
             }
             // END Get XML backup information
 
             // Copy Root Directory
-            string[] files = Directory.GetFiles(srcDrive + ":\\");
-            foreach (string file in files)
-            {
-                if(!file.EndsWith(".sys") && file.Contains("."))
-                {
-                   // File.Copy(file, local + file.Substring(1));
-                    Console.WriteLine("File.Copy(" + file + ", " + local + "\\Root" + file.Substring(1) + ")");
-                }
-            }
+            int count = 0;
 
-            // Copy Users Directory
-            int count = CopyDirectory("C:\\Users", local, true);
+            count += CopyDirectory("C:\\", local, true);
+
             Console.WriteLine("Copied " + count + " files");
-
+            DisplaySize(bytes);
 
             return 0;
         }
 
-        static void DisplaySize(long bytes)
+        static void DisplaySize(ulong bytes)
         {
-            Console.WriteLine((int)(bytes / 1024f / 1024f / 1024f) + " GB");
+            Console.WriteLine((UInt64)(bytes / 1024f / 1024f / 1024f) + " GB");
         }
 
         static int CopyDirectory(string source, string dest, bool copySubDirs)
         {
-            if (source == "C:\\Users\\!adminx")
+
+            if (GlobalExcludes.Contains(source))
                 return 0;
-            if (source.Contains("AppData"))
+            if (GlobalSubExcludes.Any(s => source.Contains(s)))
                 return 0;
             int count = 0;
             string[] dirs;
@@ -166,17 +167,30 @@ namespace SDBackup
                         count += CopyDirectory(dir, dest, copySubDirs);
                     }
                 }
-                catch (Exception e) { }
+                catch (Exception e) { Console.WriteLine(e.Message); }
             }
             // END Copy Directories
             
             return count;
         }
+
+        /***********************************************************************
+         * int CopyFiles(string source, string dest)
+         * 
+         * Input
+         *      string source - Path to source directory
+         *      string dest - destination drive letter
+         *      
+         * Output
+         *      TESTING - Prints name of file to copy on screen
+         *      RELEASE - Copies source to directory
+         ***********************************************************************/
         static int CopyFiles(string source, string dest)
         {
+            FileInfo fi;
             int count = 0;
             string[] files;
-            try
+            try // to copy files. Catches if unable to access
             {
                 files = Directory.GetFiles(source);
                 if (files == null) return count;
@@ -184,14 +198,22 @@ namespace SDBackup
                 {
                     if (!file.EndsWith(".sys") && file.Contains("."))
                     {
-                        // File.Copy(file, local + file.Substring(1));
+                        // File.Copy(file, dest + file.Substring(dest.length));
+                        
                         Console.WriteLine(file);
                         ++count;
+                        fi = new FileInfo(file);
+                        bytes += (ulong)fi.Length;
                     }
                 }
             }
-            catch (Exception e) { }
+            catch (Exception e) { Console.WriteLine(e.Message); }
             return count;
         }
+
+        // Global list of excluded users and directories
+        static List<string> GlobalExcludes = new List<string>();
+        static List<string> GlobalSubExcludes = new List<string>();
+        static ulong bytes;
     }
 }
