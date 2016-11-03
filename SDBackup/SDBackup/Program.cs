@@ -96,37 +96,39 @@ namespace SDBackup
                 return Constants.ERROR_MISSINGDIRECTORY;
 
             DriveInfo src = new DriveInfo(srcDrive);
-
-
             List<string> excludes = new List<string>();
-            // Get XML backup information
-            // local is the local destination
-            // server is the server backup destination
+
+            // Get XML backup information **************************************************************************************
             XmlDocument doc = new XmlDocument();
             doc.Load(xmlPath);
 
             string local, server;
             XmlNode node = doc.DocumentElement.SelectSingleNode("/settings/dirs/local");
             local = node.InnerText;
+            if (!Directory.Exists(local + "://")) return Constants.ERROR_MISSINGDIRECTORY;
+
             node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
             server = node.InnerText;
-
-            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/users");
+// Add sanity checks for server location
             
+
+            // Read exclude paths
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/paths");
             foreach(XmlNode child in node.ChildNodes)
             {
                 excludes.Add(child.InnerText);
                 GlobalExcludes.Add(child.InnerText);
             }
 
+            // Read exclude directories
             node = doc.DocumentElement.SelectSingleNode("/settings/exclude/directories");
             foreach(XmlNode child in node.ChildNodes)
             {
                 GlobalSubExcludes.Add(child.InnerText);
             }
-            // END Get XML backup information
+            // END Get XML backup information **********************************************************************************
 
-            // Copy Root Directory
+            // Begin recursive copy
             int count = 0;
 
             count += CopyDirectory("C:\\", local, true);
@@ -137,24 +139,36 @@ namespace SDBackup
             return 0;
         }
 
-        static void DisplaySize(ulong bytes)
+        static void DisplaySize(long bytes)
         {
             Console.WriteLine((UInt64)(bytes / 1024f / 1024f / 1024f) + " GB");
         }
 
+        /***********************************************************************
+         * int CopyFiles(string source, string dest)
+         * 
+         * Input
+         *      string source - Path to source directory
+         *      string dest - destination drive letter
+         *      
+         * Output
+         *      TESTING - Prints name of file to copy on screen
+         *      RELEASE - Copies source to directory
+         ***********************************************************************/
         static int CopyDirectory(string source, string dest, bool copySubDirs)
         {
-
-            if (GlobalExcludes.Contains(source))
-                return 0;
-            if (GlobalSubExcludes.Any(s => source.Contains(s)))
-                return 0;
             int count = 0;
             string[] dirs;
 
-            // Copy files in the source directory
+            // Check for path excludes
+            if (GlobalExcludes.Contains(source))
+                return 0;
+            // Check for folder excludes (AppData)
+            if (GlobalSubExcludes.Any(s => source.Contains(s)))
+                return 0;
+
+            // Copy files in "source"
             count += CopyFiles(source, dest);
-            // END Copy Files
 
             // Copy the directories below this
             if(copySubDirs)
@@ -167,7 +181,7 @@ namespace SDBackup
                         count += CopyDirectory(dir, dest, copySubDirs);
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e.Message); }
+                catch (Exception e) { Messages.Add(e.Message); }
             }
             // END Copy Directories
             
@@ -203,17 +217,20 @@ namespace SDBackup
                         Console.WriteLine(file);
                         ++count;
                         fi = new FileInfo(file);
-                        bytes += (ulong)fi.Length;
+                        bytes += (long)fi.Length;
                     }
                 }
             }
-            catch (Exception e) { Console.WriteLine(e.Message); }
+            catch (Exception e) { Messages.Add(e.Message); }
             return count;
         }
 
         // Global list of excluded users and directories
+        // Ugly, I know, but functional.
         static List<string> GlobalExcludes = new List<string>();
         static List<string> GlobalSubExcludes = new List<string>();
-        static ulong bytes;
+        static long bytes;
+        static List<string> Messages = new List<string>();
+
     }
 }

@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
 <dirs>
-	<local>d</local>
-	<server>serv</server>
+<local>d</local>
+<server>serv</server>
 </dirs>
 <exclude>
-	<_1>C:\\Users\\!adminx</_1>
-  <_2>C:\\Users\\telecom</_2>
+<paths>
+<ex>C:\Users\!adminx</ex>
+<ex>C:\Users\All Users</ex>
+<ex>C:\Windows</ex>
+<ex>C:\ProgramData</ex>
+<ex>C:\Program Files</ex>
+<ex>C:\Program Files (x86)</ex>
+<ex>C:\$Recycle.Bin</ex>
+<ex>C:\Qt</ex>
+<ex>C:\Python34</ex>
+</paths>
+<directories>
+<ex>AppData</ex>
+</directories>
 </exclude>
+
 </settings>
