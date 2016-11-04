@@ -98,8 +98,9 @@ namespace SDBackup
             int error = ReadXML(xmlPath);
             if (error > 0) return error;
 
+            
             // Begin recursive copy
-            CopyDirectory(bi.Source + ":\\", bi.Local, true);
+            CopyDirectory(bi.Source + ":\\", "asdf", true);
 
             // Display backup info
             Console.WriteLine("Copied " + bi.Count() + " files");
@@ -181,9 +182,15 @@ namespace SDBackup
                     {
                         if (!Directory.Exists(Path.GetDirectoryName(bi.Local + file.Substring(bi.Local.Length))))
                             Directory.CreateDirectory(Path.GetDirectoryName(bi.Local + file.Substring(bi.Local.Length)));
-                        File.Copy(file, bi.Local + file.Substring(bi.Local.Length));
-                        Console.WriteLine(file);
-                        bi.AddBytes(new FileInfo(file).Length);
+                        if(!File.Exists(bi.Local + file.Substring(bi.Local.Length)))
+                        {
+                            Console.WriteLine("_________________________________");
+                            Console.WriteLine(file);
+                            Console.WriteLine(bi.Local + file.Substring(bi.Local.Length));
+
+                            //File.Copy(file, bi.Local + file.Substring(bi.Local.Length));
+                            bi.AddBytes(new FileInfo(file).Length);
+                        }
                     }
                 }
             }
