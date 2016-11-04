@@ -5,35 +5,32 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.IO;
+using CommandLine;
+
+/* ToDo : + Informative errors
+ *        + /Full or /F option to back up program files
+ *        + /IMG for .wim image (Long time out from this)
+ *        + Implement good command line parsing
+ */
+
 
 namespace SDBackup
 {
     class Program
     {
-        
+        class Options
+        {
+            [HelpOption(HelpText="Display this help screen.")]
+            public string GetHelp()
+            {
+                return Constants.HELP_MESSAGE;
+            }
+        }
         static int Main(string[] args)
         {
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "config.xml");
             if(!File.Exists(path))
-            {
-                using (XmlWriter w = XmlWriter.Create(path))
-                {
-                    w.WriteStartDocument();
-                    w.WriteStartElement("settings");
-                    //
-                    w.WriteStartElement("dirs");
-                    w.WriteElementString("local", "d");
-                    w.WriteElementString("server", "serv");
-                    w.WriteEndElement();
-                    //
-                    w.WriteStartElement("exclude");
-                    w.WriteElementString("_1", "C:\\Users\\!adminx");
-                    w.WriteEndElement();
-                    //
-                    w.WriteEndElement();
-                    w.WriteEndDocument();
-                }
-            }
+                CreateXML(path);
 
             if (args.Length == 0)
             {
@@ -58,7 +55,8 @@ namespace SDBackup
             {
                 if (args[0] == "/h" || args[0] == "-h" || args[0] == "/?" || args[0] == "-?")
                 {
-                    Console.WriteLine("Displaying HELP");
+                    Console.Clear();
+                    Console.Write(Constants.HELP_MESSAGE);
                     return 0;
                 }
 
@@ -71,8 +69,6 @@ namespace SDBackup
 
             else if (args.Length == 2)
             {
-                Console.WriteLine("User entered 10. and source");
-
                 if (string.IsNullOrEmpty(args[0]) || string.IsNullOrEmpty(args[1]))
                 {
                     Console.WriteLine("Invalid arguments. Please use -h to see usage.");
@@ -225,6 +221,43 @@ namespace SDBackup
             return count;
         }
 
+        static void CreateXML(string path)
+        {
+            using (XmlWriter w = XmlWriter.Create(path))
+            {
+                w.WriteStartDocument();
+                w.WriteStartElement("settings");
+                // Local and remote backup destination
+                w.WriteStartElement("dirs");
+                w.WriteElementString("local", "d");
+                w.WriteElementString("server", "serv");
+                w.WriteEndElement();
+                // Write excluded paths
+                w.WriteStartElement("exclude");
+                w.WriteStartElement("paths");
+                w.WriteElementString("ex", "C:\\Users\\!adminx");
+                w.WriteElementString("ex", "C:\\Users\\All Users");
+                w.WriteElementString("ex", "C:\\Windows");
+                w.WriteElementString("ex", "C:\\ProgramData");
+                w.WriteElementString("ex", "C:\\Program Files");
+                w.WriteElementString("ex", "C:\\Program Files (x86)");
+                w.WriteElementString("ex", "C:\\$Recycle.Bin");
+                w.WriteElementString("ex", "C:\\Qt");
+                w.WriteElementString("ex", "C:\\Python34");
+                w.WriteEndElement();
+                // Write excluded directories 
+                w.WriteStartElement("directories");
+                w.WriteElementString("ex", "AppData");
+                w.WriteEndElement();
+                w.WriteEndElement();
+
+                w.WriteEndElement();
+                //
+                w.WriteEndElement();
+                w.WriteEndDocument();
+            }
+        }
+        
         // Global list of excluded users and directories
         // Ugly, I know, but functional.
         static List<string> GlobalExcludes = new List<string>();
