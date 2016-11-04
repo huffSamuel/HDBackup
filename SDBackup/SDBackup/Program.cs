@@ -28,7 +28,7 @@ namespace SDBackup
         }
         static int Main(string[] args)
         {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "config.xml");
+            string path = Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "config.xml");
             if(!File.Exists(path))
                 CreateXML(path);
 
@@ -101,7 +101,7 @@ namespace SDBackup
             string local, server;
             XmlNode node = doc.DocumentElement.SelectSingleNode("/settings/dirs/local");
             local = node.InnerText;
-            if (!Directory.Exists(local + "://")) return Constants.ERROR_MISSINGDIRECTORY;
+            //if (!Directory.Exists(local + "://")) return Constants.ERROR_MISSINGDIRECTORY;
 
             node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
             server = node.InnerText;
@@ -248,7 +248,6 @@ namespace SDBackup
                 // Write excluded directories 
                 w.WriteStartElement("directories");
                 w.WriteElementString("ex", "AppData");
-                w.WriteEndElement();
                 w.WriteEndElement();
 
                 w.WriteEndElement();
