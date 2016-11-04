@@ -4004,6 +4004,9 @@ QwBEAF8AUgBPAE0AAQBFAHgAcAByAGUAcwBzAA==
 		<row><td>SwidtagLocalComponent</td><td>ISO19770_LocalTag</td></row>
 		<row><td>SwidtagSystemComponent</td><td>ISO19770_SystemTag</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
+		<row><td>VSSccAuxPath</td><td/></row>
+		<row><td>VSSccLocalPath</td><td/></row>
+		<row><td>VSSccProvider</td><td/></row>
 	</table>
 
 	<table name="InstallUISequence">
