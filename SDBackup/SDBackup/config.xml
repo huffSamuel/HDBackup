@@ -6,19 +6,22 @@
   </dirs>
   <exclude>
     <paths>
-    <ex>C:\Users\!adminx</ex>
-    <ex>C:\Users\All Users</ex>
-    <ex>C:\Windows</ex>
-    <ex>C:\ProgramData</ex>
-    <ex>C:\Program Files</ex>
-    <ex>C:\Program Files (x86)</ex>
-    <ex>C:\$Recycle.Bin</ex>
-    <ex>C:\Qt</ex>
-    <ex>C:\Python34</ex>
+      <ex>C:\Users\!adminx</ex>
+      <ex>C:\Users\All Users</ex>
+      <ex>C:\Windows</ex>
+      <ex>C:\ProgramData</ex>
+      <ex>C:\Program Files</ex>
+      <ex>C:\Program Files (x86)</ex>
+      <ex>C:\$Recycle.Bin</ex>
+      <ex>C:\Qt</ex>
+      <ex>C:\Python34</ex>
     </paths>
     <directories>
-    <ex>AppData</ex>
+      <ex>AppData</ex>
     </directories>
+    <extensions>
+      <ex>.sys</ex>
+    </extensions>
   </exclude>
 
 </settings>

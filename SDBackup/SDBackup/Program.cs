@@ -35,21 +35,19 @@ namespace SDBackup
 
             if (args.Length == 0)
             {
-                string ID_Name, srcDrive;
-
                 Console.Write("User's name and PC ID number: ");
-                ID_Name = Console.ReadLine();
+                bi.ID = Console.ReadLine();
                 Console.Write("Drive letter to backup: ");
-                srcDrive = Console.ReadLine();
+                bi.Source = Console.ReadLine();
 
-                if (string.IsNullOrEmpty(ID_Name) || string.IsNullOrEmpty(srcDrive))
+                if (string.IsNullOrEmpty(bi.ID) || string.IsNullOrEmpty(bi.Source))
                 {
                     Console.WriteLine("Invalid arguments. Please use -h to see usage.");
                     return Constants.ERROR_ARGUMENTS;
                 }
 
                 // Perform Backup
-                return Backup(ID_Name, srcDrive, path);
+                return Backup(path);
 
             }
             else if (args.Length == 1)
@@ -75,8 +73,9 @@ namespace SDBackup
                     Console.WriteLine("Invalid arguments. Please use -h to see usage.");
                     return Constants.ERROR_ARGUMENTS;
                 }
-
-                return Backup(args[0], args[1], path);
+                bi.ID = args[0];
+                bi.Source = args[1];
+                return Backup(path);
             }
 
             else
@@ -86,53 +85,26 @@ namespace SDBackup
             }
         }
 
-        static int Backup(string ID_name, string srcDrive, string xmlPath)
+        static int Backup(string xmlPath)
         {
             // Initial Error Checking
-            if (!Directory.Exists(srcDrive + "://"))        // If the source drive does not exist
+            if (!Directory.Exists(bi.Source + "://"))
+            {
+                Console.WriteLine("Error: Missing source directory");
                 return Constants.ERROR_MISSINGDIRECTORY;
-
-            DriveInfo src = new DriveInfo(srcDrive);
-            List<string> excludes = new List<string>();
-
-            // Get XML backup information **************************************************************************************
-            XmlDocument doc = new XmlDocument();
-            doc.Load(xmlPath);
-
-            string local, server;
-            XmlNode node = doc.DocumentElement.SelectSingleNode("/settings/dirs/local");
-            local = node.InnerText;
-            //if (!Directory.Exists(local + "://")) return Constants.ERROR_MISSINGDIRECTORY;
-
-            node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
-            server = node.InnerText;
-// Add sanity checks for server location
-            
-
-            // Read exclude paths
-            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/paths");
-            foreach(XmlNode child in node.ChildNodes)
-            {
-                excludes.Add(child.InnerText);
-                GlobalExcludes.Add(child.InnerText);
             }
 
-            // Read exclude directories
-            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/directories");
-            foreach(XmlNode child in node.ChildNodes)
-            {
-                GlobalSubExcludes.Add(child.InnerText);
-            }
-            // END Get XML backup information **********************************************************************************
+            // Get XML backup information 
+            int error = ReadXML(xmlPath);
+            if (error > 0) return error;
 
             // Begin recursive copy
-            int count = 0;
+            CopyDirectory(bi.Source + ":\\", bi.Local, true);
 
-            count += CopyDirectory("C:\\", local, true);
-
-            Console.WriteLine("Copied " + count + " files");
-            DisplaySize(bytes);
-
+            // Display backup info
+            Console.WriteLine("Copied " + bi.Count() + " files");
+            DisplaySize(bi.Size());
+            Console.Read();
             return 0;
         }
 
@@ -154,18 +126,18 @@ namespace SDBackup
          ***********************************************************************/
         static int CopyDirectory(string source, string dest, bool copySubDirs)
         {
-            int count = 0;
+            DirectoryInfo root = new DirectoryInfo(source);
             string[] dirs;
 
             // Check for path excludes
-            if (GlobalExcludes.Contains(source))
+            if (bi.Paths().Contains(source, StringComparer.OrdinalIgnoreCase))
                 return 0;
             // Check for folder excludes (AppData)
-            if (GlobalSubExcludes.Any(s => source.Contains(s)))
+            if (bi.Dirs().Any(s => source.Contains(s)))
                 return 0;
 
             // Copy files in "source"
-            count += CopyFiles(source, dest);
+            CopyFiles(source, dest);
 
             // Copy the directories below this
             if(copySubDirs)
@@ -175,14 +147,14 @@ namespace SDBackup
                     dirs = Directory.GetDirectories(source);
                     foreach (string dir in dirs)
                     {
-                        count += CopyDirectory(dir, dest, copySubDirs);
+                        CopyDirectory(dir, bi.Local, copySubDirs);
                     }
                 }
-                catch (Exception e) { Messages.Add(e.Message); }
+                catch (Exception e) { bi.AddMessage(e.Message); }
             }
             // END Copy Directories
             
-            return count;
+            return 0;
         }
 
         /***********************************************************************
@@ -198,28 +170,25 @@ namespace SDBackup
          ***********************************************************************/
         static int CopyFiles(string source, string dest)
         {
-            FileInfo fi;
-            int count = 0;
             string[] files;
             try // to copy files. Catches if unable to access
             {
                 files = Directory.GetFiles(source);
-                if (files == null) return count;
+                if (files == null) return 0;
                 foreach (string file in files)
                 {
-                    if (!file.EndsWith(".sys") && file.Contains("."))
+                    if (!bi.Extensions().Contains(new FileInfo(file).Extension) && file.Contains("."))
                     {
-                        // File.Copy(file, dest + file.Substring(dest.length));
-                        
+                        if (!Directory.Exists(Path.GetDirectoryName(bi.Local + file.Substring(bi.Local.Length))))
+                            Directory.CreateDirectory(Path.GetDirectoryName(bi.Local + file.Substring(bi.Local.Length)));
+                        File.Copy(file, bi.Local + file.Substring(bi.Local.Length));
                         Console.WriteLine(file);
-                        ++count;
-                        fi = new FileInfo(file);
-                        bytes += (long)fi.Length;
+                        bi.AddBytes(new FileInfo(file).Length);
                     }
                 }
             }
-            catch (Exception e) { Messages.Add(e.Message); }
-            return count;
+            catch (Exception e) { bi.AddMessage(e.Message); }
+            return 0;
         }
 
         static void CreateXML(string path)
@@ -250,6 +219,11 @@ namespace SDBackup
                 w.WriteStartElement("directories");
                 w.WriteElementString("ex", "AppData");
                 w.WriteEndElement();
+                // Write excluded file extensions
+                w.WriteStartElement("extensions");
+                w.WriteElementString("ex", ".sys");
+                w.WriteEndElement();
+
 
                 w.WriteEndElement();
                 //
@@ -257,13 +231,51 @@ namespace SDBackup
                 w.WriteEndDocument();
             }
         }
+
+        static int ReadXML(string path)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+
+            XmlNode node = doc.DocumentElement.SelectSingleNode("/settings/dirs/local");
+            bi.Local = node.InnerText;
+            if (!Directory.Exists(bi.Local + "://"))
+            {
+                Console.WriteLine("Error: Missing local destination");
+                return Constants.ERROR_MISSINGDIRECTORY;
+            }
+
+            node = doc.DocumentElement.SelectSingleNode("/settings/dirs/server");
+            bi.Server = node.InnerText;
+            // Add sanity checks for server location
+
+
+            // Read excluded paths
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/paths");
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                bi.AddPath(child.InnerText);
+            }
+
+            // Read excluded directories
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/directories");
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                bi.AddDir(child.InnerText);
+            }
+
+            // Read excluded file extensions
+            node = doc.DocumentElement.SelectSingleNode("/settings/exclude/extensions");
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                bi.AddExt(child.InnerText);
+            }
+
+            return 0;
+        }
         
         // Global list of excluded users and directories
         // Ugly, I know, but functional.
-        static List<string> GlobalExcludes = new List<string>();
-        static List<string> GlobalSubExcludes = new List<string>();
-        static long bytes;
-        static List<string> Messages = new List<string>();
-
+        static BackupInfo bi = new BackupInfo();
     }
 }

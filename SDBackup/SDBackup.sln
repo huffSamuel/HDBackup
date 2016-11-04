@@ -5,7 +5,9 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDBackup", "SDBackup\SDBackup.csproj", "{217FCA65-614A-438B-850D-78F8FA1D3435}"
 EndProject
-Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "ISSdBackup", "ISSdBackup\ISSdBackup.isproj", "{60362A66-4123-49F6-BB89-7F7FED74AAF0}"
+Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "Install_SdBackup", "ISSdBackup\Install_SdBackup.isproj", "{60362A66-4123-49F6-BB89-7F7FED74AAF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_SDBackup", "Test_SDBackup\Test_SDBackup.csproj", "{B5DC6402-FB3F-4168-B195-7981CD220593}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,16 @@ Global
 		{60362A66-4123-49F6-BB89-7F7FED74AAF0}.Release|Any CPU.Build.0 = SingleImage
 		{60362A66-4123-49F6-BB89-7F7FED74AAF0}.SingleImage|Any CPU.ActiveCfg = SingleImage
 		{60362A66-4123-49F6-BB89-7F7FED74AAF0}.SingleImage|Any CPU.Build.0 = SingleImage
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{B5DC6402-FB3F-4168-B195-7981CD220593}.SingleImage|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
