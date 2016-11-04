@@ -11,6 +11,7 @@ using CommandLine;
  *        + /Full or /F option to back up program files
  *        + /IMG for .wim image (Long time out from this)
  *        + Implement good command line parsing
+ *        + Implement switches for altering XML
  */
 
 
